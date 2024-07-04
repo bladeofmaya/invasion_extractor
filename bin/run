@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "invasion_editor"
+require "optparse"
+
+options = {
+  prefix: "invasion",
+  outdir: Dir.pwd  # Default to current directory
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/run [options] VIDEO_FILES..."
+
+  opts.on("--prefix PREFIX", "Prefix for output files") do |prefix|
+    options[:prefix] = prefix
+  end
+
+  opts.on("--outdir DIRECTORY", "Output directory for clips") do |dir|
+    options[:outdir] = dir
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+if ARGV.empty?
+  puts "Error: No video files specified."
+  puts "Usage: bin/run [options] VIDEO_FILES..."
+  exit 1
+end
+
+processor = InvasionEditor::Processor.call(ARGV)
+
+clips = processor.write_clips(options[:prefix], options[:outdir])
+
+puts "Processed #{clips.size} clips:"
+clips.each do |clip|
+  puts "  #{clip}"
+end
