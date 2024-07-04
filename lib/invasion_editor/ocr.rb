@@ -1,5 +1,4 @@
 module InvasionEditor
-  # Handles OS Selection (darwin) and returns Frame objects
   class Ocr
     class << self
       def run(frames, video)

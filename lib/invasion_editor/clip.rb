@@ -4,8 +4,10 @@ module InvasionEditor
 
     def initialize(segment)
       @segment = segment
+      @segment.start_time = TimeShifter.wind_back(@segment.start_time, 5.5)
+      @segment.end_time = TimeShifter.wind_forward(@segment.end_time, 6.5)
+
       @generated_file = nil
-      add_time_buffer_to_segment
     end
 
     def write(output_file)
@@ -13,16 +15,7 @@ module InvasionEditor
       @generated_file = output_file
     end
 
-    def file_exists?(output_file)
-      File.exist?(output_file)
-    end
-
     private
-
-    def add_time_buffer_to_segment
-      @segment.start_time = TimeShifter.wind_back(@segment.start_time, 5.5)
-      @segment.end_time = TimeShifter.wind_forward(@segment.end_time, 6.5)
-    end
 
     def segment_type
       @segment.start_video != @segment.end_video ? :multi_file : :single_file
@@ -36,8 +29,8 @@ module InvasionEditor
         "-to", segment.end_time,
         "-map", "0",  # Include all streams from the input
         "-c", "copy", # Copy without re-encoding
-        "-avoid_negative_ts", "make_zero", # Adjust timestamps
         output_file
+        # "-avoid_negative_ts", "make_zero", # Adjust timestamps
       )
     end
 
@@ -53,6 +46,7 @@ module InvasionEditor
         system(
           "ffmpeg", "-i", segment.start_video,
           "-ss", segment.start_time,
+          "-map", "0",  # Include all streams from the input
           "-c", "copy",
           temp_file1
         )
@@ -61,6 +55,7 @@ module InvasionEditor
         system(
           "ffmpeg", "-i", segment.end_video,
           "-to", segment.end_time,
+          "-map", "0",  # Include all streams from the input
           "-c", "copy",
           temp_file2
         )

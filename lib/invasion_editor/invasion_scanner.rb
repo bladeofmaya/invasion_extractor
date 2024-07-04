@@ -1,6 +1,5 @@
 module InvasionEditor
   class InvasionScanner
-    # Note: start_video and end_video can be the same video file
     InvasionSegment = Struct.new(:start_time, :start_video, :end_time, :end_video)
 
     attr_reader :invasion_segments

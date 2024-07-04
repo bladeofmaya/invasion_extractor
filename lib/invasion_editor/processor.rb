@@ -1,6 +1,5 @@
 module InvasionEditor
   class Processor
-
     attr_accessor :videos, :clips
 
     def self.call(videos)
@@ -11,7 +10,7 @@ module InvasionEditor
     # be provided in the correct order.
     def initialize(videos)
       @videos = videos.map do |video_file|
-        InvasionEditor::Video.run(video_file)
+        InvasionEditor::Video.process(video_file)
       end
 
       @clips = generate_clips
@@ -31,6 +30,5 @@ module InvasionEditor
         InvasionEditor::Clip.new(segment)
       end
     end
-
   end
 end

@@ -1,10 +1,9 @@
 module InvasionEditor
-  # Starts the OCR process and handles metadata and caching
   class Video
     attr_reader :video, :tmpdir, :frame_data
 
-    def self.run(video)
-      new(video).process
+    def self.process(video)
+      new(video).send(:generate_data)
     end
 
     def initialize(video)
@@ -14,7 +13,9 @@ module InvasionEditor
       @frame_data = []
     end
 
-    def process
+    private
+
+    def generate_data
       if cached_data_exists?
         load_cached_data
       else
@@ -26,30 +27,11 @@ module InvasionEditor
       self
     end
 
-    private
-
     # This method generates frames from the video file and adds contrast and brightness to the frames.
     # TODO: Research if the process of character recognition can be improved by
     # reducing the aspect ratio of the frames. (e.g. 2560x1440 -> 1280x720)
-    #
     def generate_frames
-      # ffmpeg
       system("ffmpeg -i #{@video} -vf fps=2,eq=contrast=10:brightness=1.0 #{@tmpdir}/frame_%04d.jpg")
-
-      # TODO: Test performance with different hardware acceleration options.
-      # Would also save storage space.
-      # system("ffmpeg -i #{@video} -c:v hevc_videotoolbox -profile:v main -vf fps=2,eq=contrast=10:brightness=1.0 #{@tmpdir}/frame_%04d.jpg")
-      #
-      # system(
-      #   "ffmpeg",
-      #   "-hwaccel", "videotoolbox",
-      #   "-i", @video,
-      #   "-vf", "fps=2,eq=contrast=10:brightness=1.0,format=yuv420p,colorspace=bt709:iall=bt709:fast=1",
-      #   "-q:v", "3",
-      #   "-strict", "unofficial",
-      #   "-threads", "4",
-      #   "#{@tmpdir}/frame_%04d.jpg"
-      # )
     end
 
     def extract_text_from_images
@@ -93,18 +75,5 @@ module InvasionEditor
       end
       File.write(cache_file_path, data_to_cache.to_yaml)
     end
-
-    def inspect
-      frame_count = @frame_data.size
-      first_frame = @frame_data.first
-      last_frame = @frame_data.last
-
-      "#<#{self.class}:#{object_id} " \
-      "@video=\"#{@video}\", " \
-      "@frame_data=[#{frame_count} frames, " \
-      "first: #{first_frame&.timestamp}, " \
-      "last: #{last_frame&.timestamp}]>"
-    end
-
   end
 end
